@@ -1,0 +1,15 @@
+{
+  "name": "github-api",
+  "version": "1.0.0",
+  "description": "github API sample project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Michael Trouw",
+  "license": "ISC",
+  "dependencies": {
+    "bluebird": "^3.4.7",
+    "github": "^8.1.1"
+  }
+}
