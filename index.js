@@ -19,21 +19,29 @@ github.authenticate({
     token: process.env['GITHUB_TOKEN']
 });
 
-function testIt(next) {
+let etag = undefined;
+
+function testIt(_etag, next) {
     github.repos.getContent({
         owner: 'eidosam',
         repo: 'easy-slack',
-        path: 'README.md'
+        path: 'README.md',
+        headers: {
+            'If-None-Match': _etag? _etag: ''
+        },
     })
     .then((readmeData) => {
+        console.log(readmeData.meta.status);
+        // replace etag for next request
+        etag = readmeData.meta.etag;
         let buf = Buffer.from(readmeData.content, 'base64');
         next(null, buf.toString());
     })
     .catch(next);
 }
 
-async.timesLimit(500, 10, (n, next) => {
-    testIt((err, res) => {
+async.timesSeries(2, (n, next) => {
+    testIt(etag, (err, res) => {
         if(res) console.log(n, res);
         else console.error(n, err.message);
         next(err, res);
@@ -41,4 +49,3 @@ async.timesLimit(500, 10, (n, next) => {
 }, (err, results) => {
     console.log('done', results.length);
 });
-
