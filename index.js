@@ -32,13 +32,13 @@ function testIt(next) {
     .catch(next);
 }
 
-async.timesLimit(500, 10, function(n, next) {
-    testIt(function(err, res) {
+async.timesLimit(500, 10, (n, next) => {
+    testIt((err, res) => {
         if(res) console.log(n, res);
         else console.error(n, err.message);
         next(err, res);
     });
-}, function(err, results) {
+}, (err, results) => {
     console.log('done', results.length);
 });
 
