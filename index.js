@@ -1,53 +1,44 @@
-var GitHubApi = require("github");
- 
-var github = new GitHubApi({
-    // optional 
+
+const GitHubApi = require("github");
+const async = require("async");
+
+const github = new GitHubApi({
+    // optional
     debug: false,
-    protocol: "https",
-    host: "api.github.com", // should be api.github.com for GitHub 
-    pathPrefix: "", // for some GHEs; none for GitHub 
+    protocol: 'https',
     headers: {
-        "user-agent": "Smith" // GitHub is happy with a unique user agent 
+        'user-agent': 'HackYourFuture Project5'
     },
     Promise: require('bluebird'),
-    followRedirects: false, // default: true; there's currently an issue with non-get redirects, so allow ability to disable follow-redirects 
+    followRedirects: false,
     timeout: 5000
 });
- 
-// TODO: optional authentication here depending on desired endpoints. See below in README.
 
-// github.orgs.get({
-//     org: 'HackYourFuture'
-// })
+github.authenticate({
+    type: 'oauth',
+    token: process.env['GITHUB_TOKEN']
+});
 
-// .then((res) => {
-//     console.log(res);
-// })
+function testIt(next) {
+    github.repos.getContent({
+        owner: 'eidosam',
+        repo: 'easy-slack',
+        path: 'README.md'
+    })
+    .then((readmeData) => {
+        let buf = Buffer.from(readmeData.content, 'base64');
+        next(null, buf.toString());
+    })
+    .catch(next);
+}
 
-// .catch(console.error);
-
-
-github.repos.getForOrg({
-    org: 'HackYourFuture'
-})
-
-.then((repos) => {
-    console.log(repos);
-    let result = repos.forEach((repo) => {
-        // get readme from each repo
-        console.log('grabbing README.md for ' + repo.name + ' and owner: '  + repo.owner.login + '\n');
-        github.repos.getContent({
-            owner: repo.owner.login,
-            repo: repo.name,
-            path: 'README.md'
-        })
-        .then((readmeData) => {
-            let buf = Buffer.from(readmeData.content, 'base64');
-            console.log(buf.toString());
-        }).catch(console.error);
+async.timesLimit(500, 10, function(n, next) {
+    testIt(function(err, res) {
+        if(res) console.log(n, res);
+        else console.error(n, err.message);
+        next(err, res);
     });
-    // console.log(result);
+}, function(err, results) {
+    console.log('done', results.length);
+});
 
-})
-
-.catch(console.error);

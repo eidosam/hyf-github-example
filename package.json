@@ -9,6 +9,7 @@
   "author": "Michael Trouw",
   "license": "ISC",
   "dependencies": {
+    "async": "^2.1.5",
     "bluebird": "^3.4.7",
     "github": "^8.1.1"
   }
